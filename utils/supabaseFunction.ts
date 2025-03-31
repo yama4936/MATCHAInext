@@ -42,6 +42,42 @@ export const getRoomData = async () => {
   return roomData.data;
 };
 
+export const getUserById = async (id: string) => {
+  console.log(id);
+  const { data, error } = await supabase
+    .from("user")
+    .select("*")
+    .eq("id", id)
+    .single();  // 単一のレコードのみ取得
+
+  // エラーが発生した場合
+  if (error) {
+    console.error('Error fetching user:', error.message);
+    return false;
+  }
+
+  if (!data) {
+    return false;
+  } else {
+    return true;
+  }
+};
+
+export const updateUser = async (id: string, name: string) => {
+  const { data, error } = await supabase
+    .from("user")
+    .insert({ id: id, name: name })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating user:", error.message);
+    throw error;
+  }
+
+  return data.id;
+};
+
 export const addUser = async (name: string) => {
   const { data, error } = await supabase
     .from("user")
@@ -49,14 +85,11 @@ export const addUser = async (name: string) => {
     .select()
     .single();
 
-  console.log("nice");
-
   if (error) {
     console.error("Error adding user:", error.message);
     throw error;
   }
 
-  console.log(data);
   return data.id;
 };
 
@@ -226,6 +259,89 @@ export const setDistance = async (distance: number) => {
     .eq("id", userid);
 };
 
+export const getAllMessages = async () => {
+  const userid = localStorage.getItem("id");
+
+  // room_passを取得
+  const { data: mydata } = await supabase
+    .from("user")
+    .select("room_pass")
+    .eq("id", userid)
+    .single();
+
+  const pass = mydata?.room_pass;
+
+  // room_passがnullまたはundefinedの場合、nullを返す
+  if (!pass) {
+    return null;
+  }
+
+  // room_passが一致するメッセージを取得
+  const { data } = await supabase
+    .from("messages")
+    .select("*")
+    .eq("room_pass", pass)
+
+  return data || [];
+};
+
+export const addMessages = async (message: string, roomPass: number) => {
+  const userid = localStorage.getItem("id");
+const { data: name } = await supabase
+  .from("user")
+  .select("name")
+  .eq("id", userid)
+  .single();
+
+  await supabase
+    .from("messages")
+    .insert({
+      user_id: userid,
+      user_name: name?.name,
+      room_pass: roomPass,
+      message: message,
+      created_at: new Date(),
+    });
+};
+
+export const getUserRoomPass = async (): Promise<number | null> => {
+  const userid = localStorage.getItem("id");
+  const { data, error } = await supabase
+    .from("user")
+    .select("room_pass")
+    .eq("id", userid)
+    .single();
+
+  if (error) {
+    console.error("Room Passの取得エラー:", error);
+    return null;
+  }
+
+  return data?.room_pass || null;
+};
+
+export const subscribeToMessages = (
+  roomPass: number,
+  callback: (message: any) => void
+) => {
+  const subscription = supabase
+    .channel("realtime-messages") // 任意のチャネル名
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "messages" },
+      (payload) => {
+        const newMessage = payload.new;
+        if (newMessage.room_pass === roomPass) {
+          callback(newMessage);
+        }
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(subscription); // クリーンアップ
+  };
+};
 
 export const ResetData = async () => {
   const userid = localStorage.getItem("id");
@@ -276,13 +392,33 @@ export const getUserSettings = async (userId: string) => {
 
 // 画像のアップロード
 export const uploadUserIcon = async (userId: string, file: File) => {
-  const fileExt = file.name.split(".").pop();
-  const filePath = `${userId}/${Math.random()}.${fileExt}`;
+  try {
+    // ファイル名を整形（空白をアンダースコアに変換し、URLエンコード）
+    const fileExt = file.name.split(".").pop(); // 拡張子を取得
+    const fileName = `${Date.now()}.${fileExt}`; // タイムスタンプで一意な名前を生成
+    const filePath = `${userId}/${fileName}`; // ユーザーごとのフォルダに保存
 
-  // ファイルをアップロード
-  await supabase.storage
-    .from("icons")
-    .upload(filePath, file);
+    console.log(`Uploading file to: ${filePath}`);
 
-  return filePath;
+    // ファイルをSupabase Storageの「icons」バケットにアップロード
+    await supabase.storage
+      .from("icons")
+      .upload(filePath, file, {
+        upsert: true, // 同じファイル名があれば上書き
+      });
+
+    // アップロードしたファイルの公開URLを取得
+    const { data } = supabase.storage.from("icons").getPublicUrl(filePath);
+
+    if (!data?.publicUrl) {
+      console.error("Failed to get public URL");
+      return null;
+    }
+
+    console.log(`File uploaded successfully: ${data.publicUrl}`);
+    return data.publicUrl;
+  } catch (err) {
+    console.error("Unexpected error during upload:", err);
+    return null;
+  }
 };

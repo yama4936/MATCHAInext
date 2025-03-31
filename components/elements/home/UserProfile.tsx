@@ -35,20 +35,22 @@ const UserModal = () => {
   const handleIconClick = () => {
     fileInputRef.current?.click();
   };
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const userId = localStorage.getItem("id");
-    if (!userId) return;
-    const file = e.target.files?.[0];
-    console.log("");
-    console.log(file);
-    if (file) {
-      e.target.value = ""; // 同じファイルの選択を許可する
-      const newIconUrl = await uploadUserIcon(userId, file);
-      if (newIconUrl) {
-        setUserIcon(newIconUrl);
-      }
+
+  // ファイルが選択されたときの処理
+const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const userId = localStorage.getItem("id");
+  if (!userId) return;
+  const file = e.target.files?.[0];
+  console.log("Selected File:", file);
+
+  if (file) {
+    e.target.value = ""; // 同じファイルの選択を許可する
+    const newIconUrl = await uploadUserIcon(userId, file);
+    if (newIconUrl) {
+      setUserIcon(newIconUrl); // アイコンURLを更新
     }
-  };
+  }
+};
 
   // ユーザー設定を読み込む
   useEffect(() => {
