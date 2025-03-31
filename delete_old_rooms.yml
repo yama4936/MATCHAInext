@@ -1,0 +1,24 @@
+name: Delete Old Rooms
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # Every day at 12:00 PM
+    - cron: '0 0 * * *'   # Every day at 12:00 AM
+
+jobs:
+  delete-old-rooms:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run delete script
+        run: npx ts-node delete_old_rooms.ts
