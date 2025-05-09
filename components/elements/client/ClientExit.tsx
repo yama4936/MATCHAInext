@@ -28,7 +28,7 @@ const ClientExit = () => {
           border: "none",
         }}
       >
-        <p className="text-3xl">← ルーム退出</p>
+        <p className="text-3xl">← ルーム 退出</p>
       </motion.button>
     </div>
   );
