@@ -10,14 +10,9 @@ import useGyroCompass from "@/customhooks/useGyroCompass";
 const ShowDistance = () => {
   const { distance = 0, angle = 0, height = 0 } = useCalclation();
   const { permissionGranted, requestPermission, rotation } = useGyroCompass();
-  const [arrowRotation, setArrowRotation] = useState<number>(0);
 
   // 目的地の向きを計算
-  useEffect(() => {
-    if (angle !== null && rotation !== null) {
-      setArrowRotation((angle - rotation + 360) % 360);
-    }
-  }, [angle, rotation]);
+const arrowRotation = (angle - rotation + 360) % 360;
 
   // 距離を整形する関数
   const formatDistance = (distance: number) => {
