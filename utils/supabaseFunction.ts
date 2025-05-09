@@ -484,6 +484,25 @@ export const uploadUserIcon = async (userId: string, file: File) => {
   }
 };
 
+export const updateRoomStatus = async (roomPass: number, isOpen: boolean) => {
+  try {
+    const { data, error } = await supabase
+      .from("room")
+      .update({ is_open: isOpen, update_at: new Date() })
+      .eq("pass", roomPass)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating room status:", error);
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    console.error("Supabase function error (updateRoomStatus):", error);
+    return null;
+  }
+};
 // チャットメッセージの画像をアップロード 
 export const uploadChatMessageImage = async (file: File, roomPass: string | number): Promise<string | null> => {
   try {
@@ -492,7 +511,7 @@ export const uploadChatMessageImage = async (file: File, roomPass: string | numb
     const filePath = `${roomPass}/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
-      .from('chat_images')
+      .from('chat-images')
       .upload(filePath, file, {
         upsert: true,
       });
@@ -505,7 +524,7 @@ export const uploadChatMessageImage = async (file: File, roomPass: string | numb
 
     // アップロードしたファイルの公開URLを取得
     const { data: publicUrlData } = supabase.storage
-      .from('chat_attachments')
+      .from('chat-attachments')
       .getPublicUrl(filePath);
 
     if (!publicUrlData?.publicUrl) {
