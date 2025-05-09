@@ -503,3 +503,50 @@ export const updateRoomStatus = async (roomPass: number, isOpen: boolean) => {
     return null;
   }
 };
+// チャットメッセージの画像をアップロード 
+export const uploadChatMessageImage = async (file: File, roomPass: string | number): Promise<string | null> => {
+  try {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${roomPass}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('chat-images')
+      .upload(filePath, file, {
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error("Error uploading chat image:", uploadError.message);
+
+      return null; 
+    }
+
+    // アップロードしたファイルの公開URLを取得
+    const { data: publicUrlData } = supabase.storage
+      .from('chat-attachments')
+      .getPublicUrl(filePath);
+
+    if (!publicUrlData?.publicUrl) {
+      console.error("Failed to get public URL for chat image");
+      return null;
+    }
+    return publicUrlData.publicUrl;
+  } catch (err: any) {
+    console.error("Unexpected error during chat image upload:", err?.message || err);
+    return null;
+  }
+};
+
+export const deleteMessage = async (messageId: number): Promise<boolean> => {
+  const { error } = await supabase
+    .from("messages")
+    .delete()
+    .eq("id", messageId);
+
+  if (error) {
+    console.error("Error deleting message:", error.message);
+    return false;
+  }
+  return true;
+};
