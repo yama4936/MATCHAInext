@@ -483,3 +483,23 @@ export const uploadUserIcon = async (userId: string, file: File) => {
     return null;
   }
 };
+
+export const updateRoomStatus = async (roomPass: number, isOpen: boolean) => {
+  try {
+    const { data, error } = await supabase
+      .from("room")
+      .update({ is_open: isOpen, update_at: new Date() })
+      .eq("pass", roomPass)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating room status:", error);
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    console.error("Supabase function error (updateRoomStatus):", error);
+    return null;
+  }
+};
