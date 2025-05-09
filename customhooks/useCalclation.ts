@@ -83,7 +83,10 @@ const useCalclation = () => {
     setDistance(distance);
   }
 
-  const angle = getAngle(myLatitude, myLongitude, hostLatitude, hostLongitude)
+  const angle =
+    myLatitude !== null && myLongitude !== null && hostLatitude !== null && hostLongitude !== null
+      ? getAngle(myLatitude, myLongitude, hostLatitude, hostLongitude)
+      : 0;
 
   const height =
     myAltitude !== null && hostAltitude !== null
