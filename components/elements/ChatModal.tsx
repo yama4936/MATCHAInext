@@ -76,12 +76,25 @@ const ChatModal = () => {
 
     const unsubscribe = subscribeToMessages(roomPass, (newMessage) => {
       setMessages((prev) => [...prev, newMessage]);
+
+      // 自分以外のメッセージならプッシュ通知
+      if (
+        typeof window !== "undefined" &&
+        "Notification" in window &&
+        Notification.permission === "granted" &&
+        newMessage.user_id !== userId
+      ) {
+        // 画像メッセージの場合は本文を「画像が送信されました」にする
+        const isImageMsg = newMessage.message.startsWith(IMAGE_URL_PREFIX);
+        const body = isImageMsg ? "画像が送信されました" : newMessage.message;
+        new Notification(newMessage.user_name, { body });
+      }
     });
 
     return () => {
       unsubscribe();
     };
-  }, [roomPass]);
+  }, [roomPass, userId]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });

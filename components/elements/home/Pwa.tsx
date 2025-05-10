@@ -27,6 +27,10 @@ const Pwa = () => {
     // ページ読み込み完了後に判定
     if (typeof window !== "undefined") {
       checkIfPwa();
+      // 通知許可リクエスト（初回のみ）
+      if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+      }
     }
   }, []);
 
