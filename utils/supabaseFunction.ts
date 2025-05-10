@@ -10,6 +10,11 @@ export const getAllClients = async () => {
 
   const pass = mydata.data?.room_pass;
 
+  // room_passがnullまたはundefinedの場合、空配列を返す
+  if (!pass) {
+    return [];
+  }
+
   // クライアント情報を取得
   const { data: clientsData, error: clientError } = await supabase
     .from("user")
@@ -33,6 +38,11 @@ export const getRoomData = async () => {
     .single();
 
   const pass = mydata.data?.room_pass;
+
+  // room_passがnullまたはundefinedの場合、nullを返す
+  if (!pass) {
+    return null;
+  }
 
   const roomData = await supabase
     .from("room")

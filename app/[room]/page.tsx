@@ -69,7 +69,7 @@ const Room = () => {
         <ShowClients />
 
         {/* ボタンコンテナ (画面下部に固定) */}
-        <div className="fixed bottom-0 left-0 w-full h-[15vh] px-4 py-2 flex justify-between items-center z-50">
+        <div className="px-4 py-2 flex justify-between items-center">
           {/* 退出ボタン (左下) */}
           <HostExit />
 
@@ -90,7 +90,7 @@ const Room = () => {
           <ShowDistance />
 
           {/* ボタンコンテナ (画面下部に固定) */}
-          <div className="fixed bottom-0 left-0 w-full h-[15vh] px-4 py-2 flex justify-between items-center z-50">
+          <div className="px-4 py-2 flex justify-between items-center">
             {/* 退出ボタン (左下) */}
             <ClientExit />
 
