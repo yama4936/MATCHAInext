@@ -68,8 +68,14 @@ const ShowRoomDetails = () => {
     const roomUrl = `${window.location.origin}/?password=${pass}`;
 
     if (platform === "line") {
-      const shareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(roomUrl)}`;
-      window.open(shareUrl, "_blank");
+      const lineAppUrl = `line://msg/text/${encodeURIComponent(`ルームに参加してください！URLはこちら: ${roomUrl}`)}`;
+      const lineWebUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(roomUrl)}`;
+
+      // ユーザーエージェントでスマホ判定
+      const isMobile = /iPhone|Android/i.test(navigator.userAgent);
+
+      const targetUrl = isMobile ? lineAppUrl : lineWebUrl;
+      window.open(targetUrl, "_blank");
     } else if (platform === "x") {
       const xShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`ルームに参加してください！URLはこちら: ${roomUrl}`)}`;
       window.open(xShareUrl, "_blank");
