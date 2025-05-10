@@ -8,6 +8,57 @@ import { getUserSettings, updateUserSettings, uploadUserIcon } from '@/utils/sup
 
 import { RxCross1 } from 'react-icons/rx';
 
+// 修正: 型エラーとコードスタイルの統一
+const cropToCircle = (file: File): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const img = document.createElement("img"); // 修正: 型エラーを解消
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      if (!e.target?.result) {
+        reject("Failed to load file.");
+        return;
+      }
+      img.src = e.target.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+
+    img.onload = () => {
+      const size = 300; // 出力サイズ（px）
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject("Canvas not supported.");
+        return;
+      }
+
+      // 円形クリップ
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+
+      // アスペクト比を保って中央に描画
+      const scale = Math.min(size / img.width, size / img.height);
+      const x = (size - img.width * scale) / 2;
+      const y = (size - img.height * scale) / 2;
+      ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+      // Blobとして出力
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject("Failed to convert to blob.");
+        }
+      }, "image/png");
+    };
+  });
+};
+
 const UserModal = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [userName, setUserName] = useState("");
@@ -39,7 +90,9 @@ const UserModal = () => {
   // ファイルが選択されたときの処理
 const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   const userId = localStorage.getItem("id");
-  if (!userId) return;
+  if (!userId) {
+    return;
+  }
   const file = e.target.files?.[0];
   console.log("Selected File:", file);
 
@@ -72,20 +125,22 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
       {/* ユーザーアイコン */}
       <motion.button
-              whileTap={{ scale: 0.8 }}
-              transition={{ type: "spring", stiffness: 400, damping: 15 }}
-              onClick={openUserModal}
-              className="absolute top-4 left-5"
-            >
-              <Image
-                src={userIcon}
-                alt="User Icon"
-                width={55}
-                height={55}
-                className="rounded-full object-cove"
-                style={{ objectFit: "cover", objectPosition: "center" }}
-              />
-            </motion.button>
+        whileTap={{ scale: 0.8 }}
+        transition={{ type: "spring", stiffness: 400, damping: 15 }}
+        onClick={openUserModal}
+        className="absolute top-4 left-5"
+      >
+        <div className="w-14 h-14 rounded-full overflow-hidden relative"> {/* サイズを統一 */}
+          <Image
+            src={userIcon}
+            alt="User Icon"
+            width={55}
+            height={55}
+            className="rounded-full object-cover"
+            style={{ objectFit: "cover", objectPosition: "center" }}
+          />
+        </div>
+      </motion.button>
 
       {/* ユーザー設定モーダル */}
       <AnimatePresence>
@@ -129,6 +184,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                       onClick={handleIconClick}
                       className="relative"
                     >
+                    <div className="w-20 h-20 rounded-full overflow-hidden relative">
                       <Image
                         src={userIcon}
                         alt="User Icon"
@@ -138,6 +194,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                         style={{ objectFit: "cover", objectPosition: "center" }}
                         unoptimized
                       />
+                    </div>
                       <div className="absolute inset-0 bg-black bg-opacity-20 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                         <span className="text-white text-sm">変更</span>
                       </div>
