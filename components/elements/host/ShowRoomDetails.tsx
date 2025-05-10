@@ -249,7 +249,7 @@ const ShowRoomDetails = () => {
               className="flex items-center space-x-2 p-2 border-1 border-green-500 rounded hover:bg-green-100"
             >
               <FaLine size={16} color="#06C755" />
-              <span className="text-sm">LINEで共有</span>
+              <span className="text-sm text-black">LINEで共有</span>
             </button>
             <button
               onClick={() => {
@@ -259,7 +259,7 @@ const ShowRoomDetails = () => {
               className="flex items-center space-x-2 p-2 border-1 border-black rounded hover:bg-gray-100"
             >
               <FaXTwitter size={16} color="#000000" />
-              <span className="text-sm">Xで共有</span>
+              <span className="text-sm text-black">Xで共有</span>
             </button>
             <button
               onClick={() => {
@@ -269,7 +269,7 @@ const ShowRoomDetails = () => {
               className="flex items-center space-x-2 p-2 border-1 border-gray-500 rounded hover:bg-gray-200"
             >
               <IoCopyOutline size={16} color="#7d7d7d" />
-              <span className="text-sm">コピー</span>
+              <span className="text-sm text-black">コピー</span>
             </button>
           </div>
         </div>
