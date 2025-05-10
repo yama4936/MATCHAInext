@@ -46,7 +46,7 @@ export const getRoomData = async () => {
 
   const roomData = await supabase
     .from("room")
-    .select("pass, name")
+    .select("pass, name, is_open")
     .eq("pass", pass) // room_passが一致するユーザーをフィルタリング
     .single();
   return roomData.data;
@@ -121,7 +121,7 @@ export const addRoom = async (pass: number, name: string) => {
         pass: pass, 
         name: name,
         update_at: currentTime,
-        is_open: true // デフォルト値を設定
+        is_open: true
       });
       
     if (roomError) {

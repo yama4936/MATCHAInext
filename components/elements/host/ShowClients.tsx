@@ -92,7 +92,7 @@ const ShowClients = () => {
                   >
                     <div className="flex items-center gap-">
                       <Image
-                        src={client.icon || "/icons/user_default_icon.png"}
+                        src={client.icon && client.icon !== "null" && client.icon !== "" ? client.icon : "/icons/user_default_icon.png"}
                         alt={`${client.name}のアイコン`}
                         width={45}
                         height={45}
