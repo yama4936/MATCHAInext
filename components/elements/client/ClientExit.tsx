@@ -3,14 +3,11 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import useSound from "use-sound";
 
 const ClientExit = () => {
   const router = useRouter();
-  const [stop] = useSound("/sonor.mp3", { volume: 0.5, loop: false });
 
   const handleExitRoom = () => {
-    stop();
     router.push("/");
   };
 

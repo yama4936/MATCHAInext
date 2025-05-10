@@ -11,6 +11,10 @@ const ShowDistance = () => {
   const { distance = 0, angle = 0, height = 0 } = useCalclation();
   const { permissionGranted, requestPermission, rotation } = useGyroCompass();
   const [arrowRotation, setArrowRotation] = useState<number>(0);
+  const [notifiedSteps, setNotifiedSteps] = useState<number[]>([]);
+
+  // 通知する距離のしきい値
+  const notifySteps = [500, 300, 100, 50, 20];
 
   // 目的地の向きを計算
   useEffect(() => {
@@ -18,6 +22,25 @@ const ShowDistance = () => {
       setArrowRotation((angle - rotation + 360) % 360);
     }
   }, [angle, rotation]);
+
+  // 初期マウント時に、現在の距離以下のしきい値をnotifiedStepsにセット
+  useEffect(() => {
+    const alreadyPassed = notifySteps.filter((step) => distance <= step);
+    setNotifiedSteps(alreadyPassed);
+  }, []);
+
+  // 距離ごとに通知
+  useEffect(() => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (Notification.permission !== "granted") return;
+    for (const step of notifySteps) {
+      if (distance <= step && !notifiedSteps.includes(step)) {
+        new Notification(`ホストまで${step}m以内です！`);
+        setNotifiedSteps((prev) => [...prev, step]);
+        break;
+      }
+    }
+  }, [distance, notifiedSteps]);
 
   // 距離を整形する関数
   const formatDistance = (distance: number) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { getAllClients } from "@/utils/supabaseFunction";
 
@@ -9,6 +9,7 @@ import { IoLocationOutline } from "react-icons/io5";
 
 const ShowClients = () => {
   const [clientsData, setClientsData] = useState<any>([]);
+  const prevClientIdsRef = useRef<number[]>([]);
 
   // 距離を整形する関数
   const formatDistance = (distance: number) => {
@@ -24,24 +25,38 @@ const ShowClients = () => {
     const fetchClients = async () => {
       try {
         const clientData = await getAllClients();
-        if (clientData) {
-          setClientsData(clientData);
+        if (!clientData) return;
+
+        const newClientIds = clientData.map((c: any) => c.id);
+        const canNotify = typeof window !== "undefined" && 
+                         "Notification" in window && 
+                         Notification.permission === "granted";
+
+        // 新規参加者の通知処理
+        if (canNotify) {
+          const isFirstFetch = prevClientIdsRef.current.length === 0;
+          const newClients = isFirstFetch 
+            ? clientData
+            : clientData.filter(c => !prevClientIdsRef.current.includes(c.id));
+
+          newClients.forEach(c => {
+            new Notification(`${c.name}が参加しました！`);
+          });
         }
+
+        prevClientIdsRef.current = newClientIds;
+        setClientsData(clientData);
+
       } catch (error) {
         console.error("🚨 Error fetching clients:", error);
       }
     };
 
-    // 初回データ取得
     fetchClients();
-
-    // 3秒ごとにデータを取得
     intervalId = setInterval(fetchClients, 3000);
 
     return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
+      if (intervalId) clearInterval(intervalId);
     };
   }, []);
 
