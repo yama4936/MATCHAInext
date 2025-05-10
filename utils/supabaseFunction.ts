@@ -338,11 +338,6 @@ export const getAllMessages = async () => {
 
   const pass = mydata?.room_pass;
 
-  // room_passがnullまたはundefinedの場合、nullを返す
-  if (!pass) {
-    return null;
-  }
-
   // room_passが一致するメッセージを取得
   const { data } = await supabase
     .from("messages")
@@ -528,13 +523,12 @@ export const uploadChatMessageImage = async (file: File, roomPass: string | numb
 
     if (uploadError) {
       console.error("Error uploading chat image:", uploadError.message);
-
       return null; 
     }
 
-    // アップロードしたファイルの公開URLを取得
+    // アップロードしたファイルの公開URLを取得（バケット名をchat-imagesに統一）
     const { data: publicUrlData } = supabase.storage
-      .from('chat-attachments')
+      .from('chat-images')
       .getPublicUrl(filePath);
 
     if (!publicUrlData?.publicUrl) {
