@@ -30,7 +30,7 @@ const ShowRoomDetails = () => {
     }, 1200);
   };
 
-  const handleShare = (pass: string, platform: "line" | "x") => {
+  const handleShare = async (pass: string, platform: "line" | "x") => {
     const roomUrl = `${window.location.origin}/?password=${pass}`;
 
     if (platform === "line") {
