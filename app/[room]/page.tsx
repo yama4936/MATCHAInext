@@ -33,7 +33,7 @@ const Room = () => {
         localStorage.getItem("id") == null
       ) {
         router.push(`/`);
-      }else{
+      } else {
         startWatching();
       }
     };
@@ -68,12 +68,13 @@ const Room = () => {
         {/* クライアント表示 */}
         <ShowClients />
 
-        <div className="h-[15vh] justify-start items-center flex absolute mt-1">
-          {/* 退出ボタン */}
+        {/* ボタンコンテナ (画面下部に固定) */}
+        <div className="fixed bottom-0 left-0 w-full h-[15vh] px-4 py-2 flex justify-between items-center z-50">
+          {/* 退出ボタン (左下) */}
           <HostExit />
 
-          {/* チャットボタン */}
-          <ChatModal/>
+          {/* チャットボタン (右下) */}
+          <ChatModal />
         </div>
       </div>
     );
@@ -88,12 +89,13 @@ const Room = () => {
           {/* 距離と角度表示 */}
           <ShowDistance />
 
-          <div className="h-[15vh] justify-start items-center flex absolute mt-1">
-            {/* 退出ボタン */}
+          {/* ボタンコンテナ (画面下部に固定) */}
+          <div className="fixed bottom-0 left-0 w-full h-[15vh] px-4 py-2 flex justify-between items-center z-50">
+            {/* 退出ボタン (左下) */}
             <ClientExit />
 
-            {/* チャットボタン */}
-            <ChatModal/>
+            {/* チャットボタン (右下) */}
+            <ChatModal />
           </div>
         </div>
       </div>

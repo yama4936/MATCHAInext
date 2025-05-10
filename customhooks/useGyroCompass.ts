@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-
 import useGeolocation from "./useGeolocation";
 
+// iOS用のCompassHeadingプロパティを含む拡張インターフェース
 interface DeviceOrientationEventWithCompass extends DeviceOrientationEvent {
     webkitCompassHeading?: number;
-    requestPermission?: () => Promise<string>;
+    webkitCompassAccuracy?: number;
 }
 
 const useGyroCompass = () => {
@@ -16,7 +16,7 @@ const useGyroCompass = () => {
     const [declination, setDeclination] = useState(0);
 
     // useGeolocation フックで現在地を取得
-    const { latitude, longitude, error } = useGeolocation();
+    const { latitude, longitude, error} = useGeolocation();
 
     // 緯度・経度の変化を監視し、地磁気偏角を取得
     useEffect(() => {
@@ -28,13 +28,18 @@ const useGyroCompass = () => {
     // ジャイロセンサーのイベントリスナーを設定
     useEffect(() => {
         if (!permissionGranted) return;
-        window.addEventListener("deviceorientation", handleOrientation, true);
+        
+        const hasAbsolute = 'ondeviceorientationabsolute' in window;
+        const eventName = hasAbsolute ? 'deviceorientationabsolute' : 'deviceorientation';
+        
+        window.addEventListener(eventName, handleOrientation, true);
         document.addEventListener("visibilitychange", handleVisibilityChange);
+        
         return () => {
-            window.removeEventListener("deviceorientation", handleOrientation);
+            window.removeEventListener(eventName, handleOrientation);
             document.removeEventListener("visibilitychange", handleVisibilityChange);
         };
-    }, [permissionGranted]);
+    }, [permissionGranted, declination]);
 
     // iOS のセンサー許可リクエスト
     const requestPermission = async () => {
@@ -43,7 +48,6 @@ const useGyroCompass = () => {
                 const permission = await (DeviceOrientationEvent as any).requestPermission();
                 if (permission === "granted") {
                     setPermissionGranted(true);
-                    window.addEventListener("deviceorientation", handleOrientation, true);
                 } else {
                     alert("センサーの許可が必要です");
                 }
@@ -51,8 +55,8 @@ const useGyroCompass = () => {
                 console.error("許可リクエスト失敗", error);
             }
         } else {
+            // Android等、許可が必要ないデバイス
             setPermissionGranted(true);
-            window.addEventListener("deviceorientation", handleOrientation, true);
         }
     };
 
@@ -65,8 +69,7 @@ const useGyroCompass = () => {
             }
 
             const url = `https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination?lat1=${lat}&lon1=${lon}&resultFormat=json`;
-            console.log("リクエストURL:", url); // デバッグ用
-
+            
             const response = await fetch(url);
 
             // レスポンスのステータスコードを確認
@@ -92,11 +95,15 @@ const useGyroCompass = () => {
     // デバイスの向きを取得・補正
     const handleOrientation = (event: DeviceOrientationEventWithCompass) => {
         let degrees: number | undefined;
-
-        if (event.webkitCompassHeading !== undefined) {
-            degrees = event.webkitCompassHeading; // iOS
-        } else if (event.alpha !== null && event.alpha !== undefined) {
-            degrees = 360 - event.alpha; // Android
+        const compassHeading = event.webkitCompassHeading;
+        
+        // iOS (webkitCompassHeading がある場合)
+        if (compassHeading !== undefined) {
+            degrees = compassHeading;
+        } 
+        // Android (alpha値を使用)
+        else if (event.alpha !== null && event.alpha !== undefined) {
+            degrees = 360 - (event.alpha || 0);
         }
 
         if (degrees === undefined) return;
@@ -116,14 +123,24 @@ const useGyroCompass = () => {
 
     // 画面の表示状態が変わった時の処理
     const handleVisibilityChange = () => {
+        if (!permissionGranted) return;
+        
+        const hasAbsolute = 'ondeviceorientationabsolute' in window;
+        const eventName = hasAbsolute ? 'deviceorientationabsolute' : 'deviceorientation';
+        
         if (document.visibilityState === "hidden") {
-            window.removeEventListener("deviceorientation", handleOrientation);
-        } else if (permissionGranted) {
-            window.addEventListener("deviceorientation", handleOrientation, true);
+            window.removeEventListener(eventName, handleOrientation);
+        } else {
+            window.addEventListener(eventName, handleOrientation, true);
         }
     };
 
-    return { rotation, permissionGranted, requestPermission, error };
+    return { 
+        rotation, 
+        permissionGranted, 
+        requestPermission, 
+        error,
+    };
 };
 
 export default useGyroCompass;

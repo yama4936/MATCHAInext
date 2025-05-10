@@ -81,27 +81,60 @@ export const updateUser = async (id: string, name: string) => {
 export const addUser = async (name: string) => {
   const { data, error } = await supabase
     .from("user")
-    .insert({ name: name })
+    .insert({ name })
     .select()
-    .single();
+    .maybeSingle();
 
-  if (error) {
-    console.error("Error adding user:", error.message);
-    throw error;
+  if (error || !data) {
+    console.error("Error adding user:", error?.message ?? "No data returned");
+    return null; // or throw error;
   }
 
   return data.id;
 };
 
+
 export const addRoom = async (pass: number, name: string) => {
   const userid = localStorage.getItem("id");
+  if (!userid) {
+    console.error("User ID is null or undefined");
+    return;
+  }
 
-  await supabase.from("room").insert({ pass: pass, name: name });
+  try {
+    const currentTime = new Date();
+    
+    // ルームを追加
+    const { error: roomError } = await supabase
+      .from("room")
+      .insert({ 
+        pass: pass, 
+        name: name,
+        update_at: currentTime,
+        is_open: true // デフォルト値を設定
+      });
+      
+    if (roomError) {
+      console.error("Error adding room:", roomError);
+      return;
+    }
 
-  await supabase
-    .from("user")
-    .update({ room_pass: pass, role: "host", update_at: new Date() })
-    .eq("id", userid);
+  // ユーザーを更新
+  const { error: userError } = await supabase
+  .from("user")
+  .update({ 
+    room_pass: pass, 
+    role: "host", 
+    update_at: currentTime 
+  })
+  .eq("id", userid);
+  
+if (userError) {
+  console.error("Error updating user:", userError);
+}
+} catch (e) {
+console.error("Error in addRoom:", e);
+}
 };
 
 export const generateRoomId = async () => {
@@ -133,15 +166,23 @@ export const joinRoom = async (pass: number) => {
 };
 
 export const findPassword = async (password: number): Promise<boolean> => {
-  const { data, error } = await supabase
-    .from("room")
-    .select("pass")
-    .eq("pass", password)
-    .maybeSingle();
-  if (error || !data) {
+  try {
+    const { data, error } = await supabase
+      .from("room")
+      .select("pass")
+      .eq("pass", password)
+      .maybeSingle();
+    
+    if (error) {
+      console.error("Password check error:", error);
+      return false;
+    }
+    
+    return !!data; // データが存在すればtrue、なければfalse
+  } catch (e) {
+    console.error("Error in findPassword:", e);
     return false;
   }
-  return true;
 };
 
 export const isRoomLocking = async (password: number): Promise<boolean> => {
@@ -179,15 +220,27 @@ export const updateLocation = async (
   altitude: number
 ) => {
   const userid = localStorage.getItem("id");
-  await supabase
-    .from("user")
-    .update({
-      latitude: latitude,
-      longitude: longitude,
-      altitude: altitude,
-      update_at: new Date(),
-    })
-    .eq("id", userid);
+  if (!userid) {
+    return; // IDがない場合は更新しない
+  }
+  
+  try {
+    const { error } = await supabase
+      .from("user")
+      .update({
+        latitude: latitude,
+        longitude: longitude,
+        altitude: altitude,
+        update_at: new Date(),
+      })
+      .eq("id", userid);
+      
+    if (error) {
+      console.error("Location update error:", error);
+    }
+  } catch (e) {
+    console.error("Error in updateLocation:", e);
+  }
 };
 
 export const getMyLocation = async () => {
@@ -253,6 +306,10 @@ export const startLocationUpdateInterval = (callback: () => void) => {
 
 export const setDistance = async (distance: number) => {
   const userid = localStorage.getItem("id");
+  if (!userid) {
+    return; // IDがない場合は更新しない
+  }
+  
   await supabase
     .from("user")
     .update({ distance: distance, update_at: new Date() })
@@ -345,6 +402,10 @@ export const subscribeToMessages = (
 
 export const ResetData = async () => {
   const userid = localStorage.getItem("id");
+  if (!userid) {
+    return; // IDがない場合は更新しない
+  }
+  
   await supabase
     .from("user")
     .update({
@@ -421,4 +482,71 @@ export const uploadUserIcon = async (userId: string, file: File) => {
     console.error("Unexpected error during upload:", err);
     return null;
   }
+};
+
+export const updateRoomStatus = async (roomPass: number, isOpen: boolean) => {
+  try {
+    const { data, error } = await supabase
+      .from("room")
+      .update({ is_open: isOpen, update_at: new Date() })
+      .eq("pass", roomPass)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating room status:", error);
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    console.error("Supabase function error (updateRoomStatus):", error);
+    return null;
+  }
+};
+// チャットメッセージの画像をアップロード 
+export const uploadChatMessageImage = async (file: File, roomPass: string | number): Promise<string | null> => {
+  try {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${roomPass}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('chat-images')
+      .upload(filePath, file, {
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error("Error uploading chat image:", uploadError.message);
+
+      return null; 
+    }
+
+    // アップロードしたファイルの公開URLを取得
+    const { data: publicUrlData } = supabase.storage
+      .from('chat-attachments')
+      .getPublicUrl(filePath);
+
+    if (!publicUrlData?.publicUrl) {
+      console.error("Failed to get public URL for chat image");
+      return null;
+    }
+    return publicUrlData.publicUrl;
+  } catch (err: any) {
+    console.error("Unexpected error during chat image upload:", err?.message || err);
+    return null;
+  }
+};
+
+export const deleteMessage = async (messageId: number): Promise<boolean> => {
+  const { error } = await supabase
+    .from("messages")
+    .delete()
+    .eq("id", messageId);
+
+  if (error) {
+    console.error("Error deleting message:", error.message);
+    return false;
+  }
+  return true;
 };

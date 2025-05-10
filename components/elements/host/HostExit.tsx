@@ -36,7 +36,7 @@ const HostExit = () => {
           border: "none",
         }}
       >
-        <p className="text-3xl">← ルーム退出</p>
+        <p className="text-2xl sm:text-3xl">← ルーム退出</p>
       </motion.button>
 
       <AnimatePresence>

@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: [process.env.NEXT_PUBLIC_SUPABASE_HOST!],
+    domains: ['127.0.0.1', 'localhost'],
   },
   /* config options here */
 };
