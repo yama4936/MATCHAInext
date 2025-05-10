@@ -8,7 +8,6 @@ import {
   IoSendSharp,
   IoImageOutline,
   IoCloseCircleOutline,
-  IoTrashBinOutline,
 } from "react-icons/io5";
 import { RxCross1 } from "react-icons/rx";
 import {
@@ -243,8 +242,7 @@ const ChatModal = () => {
                         </div>
                         {isImageMsg && imageUrl ? (
                           <div
-                            className="mt-1 max-w-xs sm:max-w-sm mx-auto cursor-pointer"
-                            onClick={() => window.open(imageUrl, "_blank")}
+                            className="mt-1 max-w-xs sm:max-w-sm mx-auto"
                           >
                             <Image
                               src={imageUrl}
