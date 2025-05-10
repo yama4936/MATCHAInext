@@ -82,7 +82,8 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 alt="User Icon"
                 width={55}
                 height={55}
-                className="rounded-full"
+                className="rounded-full object-cove"
+                style={{ objectFit: "cover", objectPosition: "center" }}
               />
             </motion.button>
 
@@ -134,6 +135,8 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                         width={80}
                         height={80}
                         className="rounded-full object-cover"
+                        style={{ objectFit: "cover", objectPosition: "center" }}
+                        unoptimized
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-20 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                         <span className="text-white text-sm">変更</span>
