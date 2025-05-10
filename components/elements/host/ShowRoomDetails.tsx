@@ -235,8 +235,8 @@ const ShowRoomDetails = () => {
       {isModalOpen && (
         <div className="absolute top-50 left-1/2 transform -translate-x-1/2 bg-white p-4 rounded-lg shadow-lg w-64">
           <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-semibold">共有オプション</h3>
-            <button onClick={() => setIsModalOpen(false)}>
+            <h3 className="text-sm font-semibold text-black">共有オプション</h3>
+            <button onClick={() => setIsModalOpen(false)} classname="text-black">
               <IoClose size={16} />
             </button>
           </div>
