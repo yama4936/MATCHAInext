@@ -154,52 +154,133 @@ const ShowRoomDetails = () => {
   }
 
   return (
-    <div className="h-[25vh] px-4 py-9">
-      {/* ルーム名 */}
-      <h2
-        className="text-center text-5xl h-1/2 text-gray-600 truncate"
-        style={{ fontFamily: "NicoMoji" }}
-      >
-        {roomData?.name}
-      </h2>
+    <div className="min-h-[25vh] px-3 py-6 sm:px-4 sm:py-9 flex flex-col justify-between">
+      {/* ルーム名と鍵アイコンセクション */}
+      <div className="text-center mb-2">
+        {/* ルーム名と鍵アイコンのコンテナ */}
+        <div className="flex items-center justify-center h-auto min-h-[3rem] sm:min-h-[3.5rem]">
+          <h2
+            className="text-4xl sm:text-5xl text-gray-600 truncate flex-shrink min-w-0 pr-1 sm:pr-2"
+            style={{
+              fontFamily: "NicoMoji",
+            }}
+            title={roomData.name}
+          >
+            {roomData.name}
+          </h2>
+          <motion.button
+            onClick={toggleRoomLock}
+            whileTap={{ scale: 0.9, y: 1 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            className="p-1 sm:p-2 ml-2 sm:ml-3 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 flex-shrink-0"
+            aria-label={
+              roomData.is_open
+                ? "ルームをロックする"
+                : "ルームのロックを解除する"
+            }
+            title={
+              roomData.is_open
+                ? "ルームをロックする"
+                : "ルームのロックを解除する"
+            }
+          >
+            {roomData.is_open ? (
+              <FaLockOpen size={30} className="text-green-500 sm:text-[36px]" />
+            ) : (
+              <FaLock size={30} className="text-red-500 sm:text-[36px]" />
+            )}
+          </motion.button>
+        </div>
+        {/* 状態表示テキスト */}
+        <p
+          className="mt-1 text-sm sm:text-lg text-gray-500 h-auto min-h-[1.25rem]"
+          style={{ fontFamily: "NicoMoji" }}
+        >
+          {roomData.is_open ? "ルーム公開中" : "ルームロック中"}
+        </p>
+      </div>
 
       {/* パスワード表示 */}
-      <div className="relative mt-6 text-center flex items-center justify-center space-x-4 border-3 border-gray-100 rounded-2xl pt-3 pb-3 min-w-[300px] h-[50px]">
-        <div className="w-full flex items-center justify-between px-5">
-          <div className="flex items-center">
-            <p
-              className="text-2xl"
-              style={{ fontFamily: "NicoMoji", color: "#7d7d7d" }}
-            >
-              パスワード：
-            </p>
-            <p
-              className="text-2xl font-semibold ml-4"
-              style={{ fontFamily: "NicoMoji", color: "#7d7d7d" }}
-            >
-              {roomData?.pass}
-            </p>
-          </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className={`px-2 py-2 rounded transition-all duration-300 ${
-              copied
-                ? "bg-green-100 scale-110 rounded-full"
-                : "hover:bg-gray-200"
-            }`}
+      <div className="relative text-center flex items-center justify-center space-x-2 sm:space-x-4 border-2 border-gray-200 bg-gray-50 rounded-2xl py-2 sm:py-3 px-3 sm:px-5 min-w-[280px] sm:min-w-[300px] shadow-sm mt-1">
+        <div className="flex items-center flex-grow min-w-0">
+          <p
+            className="text-xl sm:text-2xl whitespace-nowrap"
+            style={{ fontFamily: "NicoMoji", color: "#7d7d7d" }}
           >
-            {copied ? (
-              <IoCheckmarkOutline
-                size={24}
-                color="#22c55e"
-                className="animate-pulse"
-              />
-            ) : (
-              <IoCopyOutline size={24} color="#7d7d7d" />
-            )}
-          </button>
+            パスワード：
+          </p>
+          <p
+            className="text-xl sm:text-2xl font-semibold ml-2 sm:ml-3 tracking-wider truncate"
+            style={{ fontFamily: "NicoMoji", color: "#5a5a5a" }}
+            title={String(roomData.pass)}
+          >
+            {roomData.pass}
+          </p>
         </div>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className={`p-2 sm:p-2.5 rounded-full transition-all duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 flex-shrink-0 ${
+            copied
+              ? "bg-green-100 scale-110 transform"
+              : "bg-gray-200 hover:bg-gray-300 active:bg-gray-400"
+          }`}
+          aria-label="共有オプションを開く"
+          title="共有オプションを開く"
+        >
+          <IoShareSocialOutline size={20} className="text-gray-700 sm:text-[22px]" />
+        </button>
       </div>
+
+      {/* モーダル */}
+      {isModalOpen && (
+        <div className="absolute top-50 left-1/2 transform -translate-x-1/2 bg-white p-4 rounded-lg shadow-lg w-64">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-sm font-semibold">共有オプション</h3>
+            <button onClick={() => setIsModalOpen(false)}>
+              <IoClose size={16} />
+            </button>
+          </div>
+          <div className="flex flex-col space-y-2">
+            <button
+              onClick={() => {
+                handleShare(roomData?.pass.toString(), "line");
+                setIsModalOpen(false);
+              }}
+              className="flex items-center space-x-2 p-2 border-1 border-green-500 rounded hover:bg-green-100"
+            >
+              <FaLine size={16} color="#06C755" />
+              <span className="text-sm">LINEで共有</span>
+            </button>
+            <button
+              onClick={() => {
+                handleShare(roomData?.pass.toString(), "x");
+                setIsModalOpen(false);
+              }}
+              className="flex items-center space-x-2 p-2 border-1 border-black rounded hover:bg-gray-100"
+            >
+              <FaXTwitter size={16} color="#000000" />
+              <span className="text-sm">Xで共有</span>
+            </button>
+            <button
+              onClick={() => {
+                copyToClipboard();
+                setIsModalOpen(false);
+              }}
+              className="flex items-center space-x-2 p-2 border-1 border-gray-500 rounded hover:bg-gray-200"
+            >
+              <IoCopyOutline size={16} color="#7d7d7d" />
+              <span className="text-sm">コピー</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* トースト通知 */}
+      {showToast && (
+        <div className="fixed bottom-4 right-4 bg-gray-800 text-white py-2 px-4 rounded shadow-lg">
+          コピーしました！
+        </div>
+      )}
     </div>
   );
 };
