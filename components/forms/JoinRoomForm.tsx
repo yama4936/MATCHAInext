@@ -165,7 +165,7 @@ const JoinRoomForm = () => {
             }}
             disabled={isLoading}
           >
-            <p className="text-gray-600 text-xl sm:text-2xl">
+            <p className="text-gray-600 text2xl">
               {isLoading ? "確認中..." : "ルームに参加"}
             </p>
           </motion.button>
