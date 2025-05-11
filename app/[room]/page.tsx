@@ -1,3 +1,21 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { CheckRole } from "@/utils/supabaseFunction";
+
+import useGeolocation from "@/customhooks/useGeolocation";
+
+import ShowRoomDetails from "@/components/elements/host/ShowRoomDetails";
+import ShowClients from "@/components/elements/host/ShowClients";
+import HostExit from "@/components/elements/host/HostExit";
+
+import ShowRoom from "@/components/elements/client/ShowRoom";
+import ShowDistance from "@/components/elements/client/ShowDistance";
+import ClientExit from "@/components/elements/client/ClientExit";
+import ChatModal from "@/components/elements/ChatModal";
+
 const Room = () => {
   const router = useRouter();
   const [userrole, setUserrole] = useState<string | null>(null);
@@ -43,10 +61,7 @@ const Room = () => {
   if (userrole === "host") {
     // ホスト側の表示
     return (
-      <div
-        className="w-full h-screen flex flex-col justify-center items-center relative"
-        style={{ backgroundColor: "#f9f8f7" }}
-      >
+      <div className="relative h-screen bg-white">
         {/* ルーム名 */}
         <ShowRoomDetails />
 
@@ -66,10 +81,7 @@ const Room = () => {
   } else if (userrole === "client") {
     // クライアント側の表示
     return (
-      <div
-        className="w-full h-screen flex flex-col justify-center items-center relative"
-        style={{ backgroundColor: "#f9f8f7" }}
-      >
+      <div>
         <div className="relative h-screen bg-white">
           {/* ルーム名 */}
           <ShowRoom />
@@ -90,12 +102,7 @@ const Room = () => {
     );
   } else {
     //　それ以外の表示(空のdivタグ)
-    return (
-      <div
-        className="w-full h-screen flex flex-col justify-center items-center relative"
-        style={{ backgroundColor: "#f9f8f7" }}
-      ></div>
-    );
+    return <div></div>;
   }
 };
 
