@@ -48,6 +48,13 @@ const Home = () => {
     }
   }, [fontsReady, timeoutDone]);
 
+  useEffect(() => {
+    // Service Worker登録
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js");
+    }
+  }, []);
+
   return (
     <div>
       <DataInitialize />

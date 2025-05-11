@@ -6,10 +6,12 @@ import { motion } from "framer-motion";
 
 import useCalclation from "@/customhooks/useCalclation";
 import useGyroCompass from "@/customhooks/useGyroCompass";
+import { useNotificationManager } from "@/customhooks/use-notification-manager";
 
 const ShowDistance = () => {
   const { distance = 0, angle = 0, height = 0 } = useCalclation();
   const { permissionGranted, requestPermission, rotation } = useGyroCompass();
+  const { isSupported, subscription, sendNotification } = useNotificationManager();
   const [arrowRotation, setArrowRotation] = useState<number>(0);
   const [notifiedSteps, setNotifiedSteps] = useState<number[]>([]);
 
@@ -31,16 +33,18 @@ const ShowDistance = () => {
 
   // 距離ごとに通知
   useEffect(() => {
-    if (typeof window === "undefined" || !("Notification" in window)) return;
-    if (Notification.permission !== "granted") return;
+    if (!isSupported || !subscription) return;
     for (const step of notifySteps) {
       if (distance <= step && !notifiedSteps.includes(step)) {
-        new Notification(`ホストまで${step}m以内です！`);
+        const title = "到達距離";
+        const body = `ホストまであと${step}mです！`;
+        console.log(`[ShowDistance] sendNotification: title=${title}, body=${body}`);
+        sendNotification(title, body);
         setNotifiedSteps((prev) => [...prev, step]);
         break;
       }
     }
-  }, [distance, notifiedSteps]);
+  }, [distance, notifiedSteps, isSupported, subscription]);
 
   // 距離を整形する関数
   const formatDistance = (distance: number) => {
