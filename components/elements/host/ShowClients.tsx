@@ -6,10 +6,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { getAllClients } from "@/utils/supabaseFunction";
 
 import { IoLocationOutline } from "react-icons/io5";
+import { useNotificationManager } from "@/customhooks/use-notification-manager";
 
 const ShowClients = () => {
   const [clientsData, setClientsData] = useState<any>([]);
   const prevClientIdsRef = useRef<number[]>([]);
+  const { isSupported, subscription, sendNotification } = useNotificationManager();
 
   // 距離を整形する関数
   const formatDistance = (distance: number) => {
@@ -28,19 +30,19 @@ const ShowClients = () => {
         if (!clientData) return;
 
         const newClientIds = clientData.map((c: any) => c.id);
-        const canNotify = typeof window !== "undefined" && 
-                         "Notification" in window && 
-                         Notification.permission === "granted";
 
         // 新規参加者の通知処理
-        if (canNotify) {
+        if (isSupported && subscription) {
           const isFirstFetch = prevClientIdsRef.current.length === 0;
           const newClients = isFirstFetch 
             ? clientData
             : clientData.filter(c => !prevClientIdsRef.current.includes(c.id));
 
           newClients.forEach(c => {
-            new Notification(`${c.name}が参加しました！`);
+            const title = "新しい参加者";
+            const body = `${c.name}が参加しました！`;
+            console.log(`[ShowClients] sendNotification: title=${title}, body=${body}`);
+            sendNotification(title, body);
           });
         }
 
@@ -58,7 +60,7 @@ const ShowClients = () => {
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, []);
+  }, [isSupported, subscription]);
 
   return (
     <div>

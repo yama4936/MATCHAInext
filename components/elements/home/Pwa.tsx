@@ -4,10 +4,21 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { RxCross1 } from "react-icons/rx";
+import { useNotificationManager } from "@/customhooks/use-notification-manager";
+
+const PUBLIC_VAPID_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
+}
 
 const Pwa = () => {
   const [showPwaModal, setShowPwaModal] = useState(false);
   const [isPwa, setIsPwa] = useState(true); // デフォルトでtrueにして、判定後にfalseに変更
+  const { subscription, error, subscribeToPush, unsubscribeFromPush } = useNotificationManager();
 
   // PWAとして実行されているかを判定
   useEffect(() => {
@@ -27,10 +38,6 @@ const Pwa = () => {
     // ページ読み込み完了後に判定
     if (typeof window !== "undefined") {
       checkIfPwa();
-      // 通知許可リクエスト（初回のみ）
-      if ("Notification" in window && Notification.permission === "default") {
-        Notification.requestPermission();
-      }
     }
   }, []);
 
@@ -46,9 +53,9 @@ const Pwa = () => {
 
   return (
     <div>
-      {/* PWA促進テキスト - PWAでない場合のみ表示 */}
-      {!isPwa && (
-        <div className="mt-20 left-0 right-0 flex justify-center">
+      {/* PWAでないときは「もっと快適に使うために」、PWAのときは「通知ON⇔通知OFF」トグルボタン */}
+      {!isPwa ? (
+        <div className="mt-20 left-0 right-0 flex flex-col items-center justify-center">
           <motion.button
             onClick={openPwaModal}
             whileTap={{ scale: 0.8 }}
@@ -61,6 +68,27 @@ const Pwa = () => {
           >
             もっと快適に使うために
           </motion.button>
+        </div>
+      ) : (
+        <div className="mt-15 left-0 right-0 flex flex-col items-center justify-center">
+          <motion.button
+            whileTap={{ scale: 0.8 }}
+            transition={{ type: "spring", stiffness: 300, damping: 15 }}
+            className="px-4 py-2 rounded-4xl bg-white"
+            style={{
+              color: subscription ? "#fff" : "#fff",
+              backgroundColor: subscription ? "#ff4d4f" : "#7fff7f", // OFF:赤, ON:黄緑
+              fontFamily: "NicoMoji",
+              boxShadow: "2px 6px 3px #dee6ee",
+              border: "none",
+            }}
+            onClick={subscription ? unsubscribeFromPush : subscribeToPush}
+          >
+            <p className="text-xl sm:text-2xl">{subscription ? "通知OFF" : "通知ON"}</p>
+          </motion.button>
+          {error && (
+            <p className="mt-2 text-red-500">{error}</p>
+          )}
         </div>
       )}
 

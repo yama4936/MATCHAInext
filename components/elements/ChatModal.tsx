@@ -21,6 +21,7 @@ import {
 import Linkify from "react-linkify";
 import UrlPreview from "./UrlPreview";
 import ConfirmationModal from "../modals/confirmation-modal";
+import { useNotificationManager } from "@/customhooks/use-notification-manager";
 
 export type Message = {
   id: number;
@@ -53,6 +54,8 @@ const ChatModal = () => {
     null
   );
 
+  const { isSupported, subscription, sendNotification } = useNotificationManager();
+
   useEffect(() => {
     const fetchMessages = async () => {
       const data = await getAllMessages();
@@ -79,22 +82,20 @@ const ChatModal = () => {
 
       // 自分以外のメッセージならプッシュ通知
       if (
-        typeof window !== "undefined" &&
-        "Notification" in window &&
-        Notification.permission === "granted" &&
-        newMessage.user_id !== userId
+        isSupported && subscription && newMessage.user_id !== userId
       ) {
         // 画像メッセージの場合は本文を「画像が送信されました」にする
         const isImageMsg = newMessage.message.startsWith(IMAGE_URL_PREFIX);
         const body = isImageMsg ? "画像が送信されました" : newMessage.message;
-        new Notification(newMessage.user_name, { body });
+        console.log(`[ChatModal] sendNotification: title=${newMessage.user_name}, body=${body}`);
+        sendNotification(newMessage.user_name, body);
       }
     });
 
     return () => {
       unsubscribe();
     };
-  }, [roomPass, userId]);
+  }, [roomPass, userId, isSupported, subscription, sendNotification]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
