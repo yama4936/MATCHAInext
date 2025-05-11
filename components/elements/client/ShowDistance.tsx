@@ -13,10 +13,6 @@ const ShowDistance = () => {
   const { permissionGranted, requestPermission, rotation } = useGyroCompass();
   const { isSupported, subscription, sendNotification } = useNotificationManager();
   const [arrowRotation, setArrowRotation] = useState<number>(0);
-  const [notifiedSteps, setNotifiedSteps] = useState<number[]>([]);
-
-  // 通知する距離のしきい値
-  const notifySteps = [500, 300, 100, 50, 20];
 
   // 目的地の向きを計算
   useEffect(() => {
@@ -103,7 +99,7 @@ const ShowDistance = () => {
 
           {/* 中央に距離表示 */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center bg-white bg-opacity-70 rounded-full p-4">
+            <div className="text-center bg-opacity-70 rounded-full p-4">
               <p
                 className="text-xl text-gray-500"
                 style={{ fontFamily: "NicoMoji" }}
