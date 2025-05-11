@@ -84,7 +84,9 @@ const Room = () => {
     // クライアント側の表示
     return (
       <div>
-        <div className="relative h-screen bg-white">
+        <div className="relative h-screen bg-white"
+        style={{ backgroundColor: "#f9f8f7" }}//背景色指定
+        >
           {/* ルーム名 */}
           <ShowRoom />
 
