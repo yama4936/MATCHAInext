@@ -157,8 +157,7 @@ const JoinRoomForm = () => {
           <motion.button
             type="submit"
             whileTap={{ scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            className="w-40 sm:w-45 h-12 sm:h-13 mx-auto block px-2 py-2 mb-8 bg-white rounded-xl disabled:opacity-60 disabled:cursor-not-allowed transition-opacity duration-200"
+            className="w-45 h-13 mx-auto block px-4 py-2 mb-8 bg-white rounded-xl"
             style={{
               boxShadow: "2px 6px 3px #dee6ee",
               fontFamily: "NicoMoji",
