@@ -130,7 +130,7 @@ const Pwa = () => {
                     className="text-lg leading-relaxed text-center mb-4"
                     style={{ fontFamily: "NicoMoji", color: "#7d7d7d" }}
                   >
-                    MATCHAIはPWAに対応しています。Webブラウザのメニューからホーム画面に追加をすることで、通知機能などが追加されてさらに快適に使うことができます。
+                    MATCHAIはPWAに対応しています。Webブラウザのメニューからホーム画面に追加をすることで、通知機能が追加されてさらに快適に使うことができます。
                   </p>
                 </div>
               </motion.div>
