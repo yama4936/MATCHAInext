@@ -13,6 +13,7 @@ const ShowDistance = () => {
   const { permissionGranted, requestPermission, rotation } = useGyroCompass();
   const { isSupported, subscription, sendNotification } = useNotificationManager();
   const [arrowRotation, setArrowRotation] = useState<number>(0);
+  const [notifiedSteps, setNotifiedSteps] = useState<number[]>([]);
 
    // 通知する距離のしきい値
   const notifySteps = [500, 300, 100, 50, 20];
