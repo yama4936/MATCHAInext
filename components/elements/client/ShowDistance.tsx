@@ -76,7 +76,7 @@ const ShowDistance = () => {
 
           {/* 中央に距離表示 */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center bg-white bg-opacity-70 rounded-full p-4">
+            <div className="w-[100%] h-[100%] text-center bg-opacity-70 rounded-full p-4">
               <p
                 className="text-xl text-gray-500"
                 style={{ fontFamily: "NicoMoji" }}
