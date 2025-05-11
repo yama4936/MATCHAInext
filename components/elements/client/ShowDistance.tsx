@@ -14,6 +14,9 @@ const ShowDistance = () => {
   const { isSupported, subscription, sendNotification } = useNotificationManager();
   const [arrowRotation, setArrowRotation] = useState<number>(0);
 
+   // 通知する距離のしきい値
+  const notifySteps = [500, 300, 100, 50, 20];
+
   // 目的地の向きを計算
   useEffect(() => {
     if (angle !== null && rotation !== null) {
